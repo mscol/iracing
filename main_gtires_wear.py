@@ -164,54 +164,27 @@ def draw_g_ball(lat_g_val, long_g_val):
         x = int(CENTER + dx)
         y = int(CENTER + dy)
 
-    # Determine dot color based on lateral G
+    def clamp_color(value):
+        return max(0, min(int(value), 255))
+
+# Determine dot color based on lateral G
     lat_abs = abs(lat_g_val)
+
     if lat_abs == 0:
         dot_color = (50, 50, 50)  # Grey
-    elif lat_abs <= 0.7:
+    elif lat_abs <= 0.75:
+        # Green to Yellow gradient
         ratio = lat_abs / 0.5
-        red = int(255 * ratio)
-        if red > 255:
-            red = 255
-        elif red < 0:
-            red = red * -1
-        else:
-            red = 255
+        red = clamp_color(255 * ratio)
         green = 255
-        dot_color = (red, green, 0)  # Green to Yellow
-    elif lat_abs <= -0.7:
-        ratio = lat_abs / 0.5
-        red = int(255 * ratio)
-        if red > 255:
-            red = 255
-        elif red < 0:
-            red = red * -1
-        else:
-            red = 255
-        green = 255
-        dot_color = (red, green, 0)  # Green to Yellow
-    elif lat_abs >=-0.7:
-        ratio = (lat_abs) / 0.5
-        red = 255
-        green = int(255 * (1 - ratio))
-        if green > 255:
-            green = 255
-        elif green < 0:
-            green = green * -1
-        else:
-            green = 255
-        dot_color = (red, green, 0)  # Red
+        dot_color = (red, green, 0)
     else:
-        ratio = (lat_abs) / 0.5
+        # Yellow to Red gradient
+        ratio = lat_abs / 1.5  # Can be adjusted for sharper fade
         red = 255
-        green = int(255 * (1 - ratio))
-        if green > 255:
-            green = 255
-        elif green < 0:
-            green = green * -1
-        else:
-            green = 255
-        dot_color = (red, green, 0)  # Red
+        green = clamp_color(255 * (1 - ratio))
+        dot_color = (red, green, 0)
+
 
     print(dot_color)
     pygame.draw.circle(screen, dot_color, (x, y), DOT_RADIUS)
