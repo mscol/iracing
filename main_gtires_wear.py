@@ -3,10 +3,17 @@ import irsdk
 import math
 import sys
 import time
+#####
+#possible updates
+#
+#always on top
+#rewrite get_color so lat_abs can be used to dynamically assign dot_color instead of manual logic?
+#dynamically resize/move GUI elements on screenresize?? lol
+#
 
 # Constants
 G = 9.81
-WINDOW_SIZE = 500
+WINDOW_SIZE = 300
 CENTER = WINDOW_SIZE // 2
 MAX_G = 3.0
 DOT_RADIUS = 8
@@ -14,7 +21,7 @@ CIRCLE_RADIUS = CENTER - 60
 
 # Initialize pygame
 pygame.init()
-screen = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE))
+screen = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE),pygame.RESIZABLE)
 pygame.display.set_caption("iRacing G-Ball with Tire Heatmap")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 16)
@@ -58,17 +65,21 @@ class Tire:
         self.right = min(max(self.right, 0.0), 1.0)
 
     def get_color(self, zone):
-        val = {'left': self.left, 'center': self.center, 'right': self.right}[zone]
+        val = {'left': self.left, 'center': self.center, 'right': self.right}[zone]           
         if val < 0.1:
-            return (50, 50, 50)
-        elif val < 0.3:
-            return (0, 128, 0)
-        elif val < 0.5:
-            return (255, 255, 0)
-        elif val < 0.75:
-            return (255, 165, 0)
+            return (50, 50, 50)  # dim gray or "inactive"
+        val = min(max(val, 0.0), 1.0)  # clamp between 0 and 1
+        if val <= 0.75:
+            # Green (0,255,0) → Yellow (255,255,0)
+            ratio = val / 0.5
+            red = int(255 * ratio)
+            green = 255
         else:
-            return (255, 0, 0)
+            # Yellow (255,255,0) → Red (255,0,0)
+            ratio = (val - 0.5) / 0.5
+            red = 255
+            green = int(255 * (1 - ratio))
+        return (red, green, 0)
 
 lf = Tire()
 lr = Tire()
@@ -118,7 +129,7 @@ def loop():
         lr.update(long_abs)
         rr.update(long_abs)
 
-    print(f"G-Lat: {lat_g:.2f}, G-Long: {long_g:.2f} | VelX: {vel_x:.2f}, VelY: {vel_y:.2f}, VelZ: {vel_z:.2f}")
+    #print(f"G-Lat: {lat_g:.2f}, G-Long: {long_g:.2f} | VelX: {vel_x:.2f}, VelY: {vel_y:.2f}, VelZ: {vel_z:.2f}")
 
 def draw_tire(x, y, tire, label):
     tire_width = 60
@@ -156,16 +167,53 @@ def draw_g_ball(lat_g_val, long_g_val):
     # Determine dot color based on lateral G
     lat_abs = abs(lat_g_val)
     if lat_abs == 0:
-        dot_color = (255, 255, 255)  # White
-    elif lat_abs <= 0.4:
-        dot_color = (0, 255, 0)  # Green
+        dot_color = (50, 50, 50)  # Grey
     elif lat_abs <= 0.7:
-        dot_color = (255, 255, 0)  # Yellow
-    elif lat_abs <= 1.1:
-        dot_color = (255, 165, 0)  # Orange
+        ratio = lat_abs / 0.5
+        red = int(255 * ratio)
+        if red > 255:
+            red = 255
+        elif red < 0:
+            red = red * -1
+        else:
+            red = 255
+        green = 255
+        dot_color = (red, green, 0)  # Green to Yellow
+    elif lat_abs <= -0.7:
+        ratio = lat_abs / 0.5
+        red = int(255 * ratio)
+        if red > 255:
+            red = 255
+        elif red < 0:
+            red = red * -1
+        else:
+            red = 255
+        green = 255
+        dot_color = (red, green, 0)  # Green to Yellow
+    elif lat_abs >=-0.7:
+        ratio = (lat_abs) / 0.5
+        red = 255
+        green = int(255 * (1 - ratio))
+        if green > 255:
+            green = 255
+        elif green < 0:
+            green = green * -1
+        else:
+            green = 255
+        dot_color = (red, green, 0)  # Red
     else:
-        dot_color = (255, 0, 0)  # Red
+        ratio = (lat_abs) / 0.5
+        red = 255
+        green = int(255 * (1 - ratio))
+        if green > 255:
+            green = 255
+        elif green < 0:
+            green = green * -1
+        else:
+            green = 255
+        dot_color = (red, green, 0)  # Red
 
+    print(dot_color)
     pygame.draw.circle(screen, dot_color, (x, y), DOT_RADIUS)
 
     text = font.render(f"Lateral G: {lat_g_val:.2f} | Longitudinal G: {long_g_val:.2f}", True, (255, 255, 255))
