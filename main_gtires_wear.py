@@ -72,13 +72,15 @@ class Tire:
         if val <= 0.75:
             # Green (0,255,0) → Yellow (255,255,0)
             ratio = val / 0.5
-            red = int(255 * ratio)
+            red = min(int(255 * ratio), 255)
             green = 255
+            print(red, green)
         else:
             # Yellow (255,255,0) → Red (255,0,0)
             ratio = (val - 0.5) / 0.5
             red = 255
-            green = int(255 * (1 - ratio))
+            green = min(int(255 * (1 - ratio)), 255)
+            print(red, green)
         return (red, green, 0)
 
 lf = Tire()
@@ -186,7 +188,7 @@ def draw_g_ball(lat_g_val, long_g_val):
         dot_color = (red, green, 0)
 
 
-    print(dot_color)
+    #print(dot_color)
     pygame.draw.circle(screen, dot_color, (x, y), DOT_RADIUS)
 
     text = font.render(f"Lateral G: {lat_g_val:.2f} | Longitudinal G: {long_g_val:.2f}", True, (255, 255, 255))
@@ -223,4 +225,8 @@ def run_gball():
         sys.exit()
 
 if __name__ == "__main__":
-    run_gball()
+    try:
+        run_gball()
+    finally:
+        pygame.quit()
+        sys.exit()
