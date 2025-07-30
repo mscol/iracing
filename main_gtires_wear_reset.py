@@ -3,6 +3,20 @@ import irsdk
 import math
 import sys
 import time
+#####
+#possible updates
+#
+#always on top
+#rewrite get_color so lat_abs can be used to dynamically assign dot_color instead of manual logic?
+#dynamically resize/move GUI elements on screenresize?? lol
+#
+#
+#updates
+#
+#add velocityX to calc for tire load
+#redo timing logic with G61 estimated tire wear
+#added Reset Tires button
+#
 
 # Constants
 G = 9.81
