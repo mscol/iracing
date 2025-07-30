@@ -57,26 +57,26 @@ class Tire:
 
     def update(self, load, dir):
         if dir == "lat+":
-            self.left += load * 0.000325
-            self.center += load * 0.0002
-            self.right += load * 0.00015
+            self.left += load * 0.0000825
+            self.center += load * 0.00005
+            self.right += load * 0.000035
         elif dir == "lat-":
-            self.left += load * 0.00015
-            self.center += load * 0.0002
-            self.right += load * 0.000325
+            self.left += load * 0.000035
+            self.center += load * 0.00005
+            self.right += load * 0.0000825
         elif dir == "long+":
-            self.left += load * 0.0002
-            self.center += load * 0.0003
-            self.right += load * 0.0002
+            self.left += load * 0.00005
+            self.center += load * 0.00005
+            self.right += load * 0.00005
         elif dir == "long-":
-            self.left += load * 0.0002
-            self.center += load * 0.0003
-            self.right += load * 0.0002
+            self.left += load * 0.00005
+            self.center += load * 0.00005
+            self.right += load * 0.00005
         else:
             # fallback for unknown direction
-            self.left += load * 0.0002
-            self.center += load * 0.0003
-            self.right += load * 0.0002
+            self.left += load * 0.00005
+            self.center += load * 0.00005
+            self.right += load * 0.00005
             self.history.append(load)
         if len(self.history) > 90000:  # ~25 minutes at 60Hz
             self.history.pop(0)
@@ -144,18 +144,18 @@ def loop():
     long_abs = abs(long_g) + abs(vel_y * 0.000000001)
 
     if lat_g > 0: #weight shifting left
-        rf.update(lat_abs + .04,"lat+")
-        rr.update(lat_abs - .1,"lat+")
+        rf.update(lat_abs,"lat+")
+        rr.update(lat_abs - .5,"lat+")
     elif lat_g < 0: #weight shifting right
-        lf.update(lat_abs + .04,"lat-")
-        lr.update(lat_abs - .1,"lat-")
+        lf.update(lat_abs,"lat-")
+        lr.update(lat_abs - .5,"lat-")
 
     if long_g > 0: #weight shifting forward
         lf.update(long_abs,"long+")
         rf.update(long_abs,"long+")
     elif long_g < 0: #weight shifting backwards
-        lr.update(long_abs - .1,"long-")
-        rr.update(long_abs - .1,"long-")
+        lr.update(long_abs - .5,"long-")
+        rr.update(long_abs - .5,"long-")
 
 def draw_tire(x, y, tire, label):
     tire_width = 60
