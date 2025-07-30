@@ -15,6 +15,7 @@ import time
 #
 #add velocityX to calc for tire load
 #redo timing logic with G61 estimated tire wear
+####rears should wear slower than fronts, as in iracing/irl
 #added Reset Tires button
 #
 
@@ -56,35 +57,35 @@ class Tire:
 
     def update(self, load, dir):
         if dir == "lat+":
-            self.left += load * 0.0000305
-            self.center += load * 0.00002
-            self.right += load * 0.000015
+            self.left += load * 0.000325
+            self.center += load * 0.0002
+            self.right += load * 0.00015
         elif dir == "lat-":
-            self.left += load * 0.000015
-            self.center += load * 0.00002
-            self.right += load * 0.0000305
+            self.left += load * 0.00015
+            self.center += load * 0.0002
+            self.right += load * 0.000325
         elif dir == "long+":
-            self.left += load * 0.00002
-            self.center += load * 0.00003
-            self.right += load * 0.00002
+            self.left += load * 0.0002
+            self.center += load * 0.0003
+            self.right += load * 0.0002
         elif dir == "long-":
-            self.left += load * 0.00002
-            self.center += load * 0.00003
-            self.right += load * 0.00002
+            self.left += load * 0.0002
+            self.center += load * 0.0003
+            self.right += load * 0.0002
         else:
             # fallback for unknown direction
-            self.left += load * 0.00002
-            self.center += load * 0.00003
-            self.right += load * 0.00002
+            self.left += load * 0.0002
+            self.center += load * 0.0003
+            self.right += load * 0.0002
             self.history.append(load)
         if len(self.history) > 90000:  # ~25 minutes at 60Hz
             self.history.pop(0)
         self.decay()
 
     def decay(self):
-        self.left *= 0.999997
-        self.center *= 0.999997
-        self.right *= 0.999997
+        self.left *= 0.999999997
+        self.center *= 0.99999997
+        self.right *= 0.99999997
         self.left = min(max(self.left, 0.0), 1.0)
         self.center = min(max(self.center, 0.0), 1.0)
         self.right = min(max(self.right, 0.0), 1.0)
@@ -143,10 +144,10 @@ def loop():
     long_abs = abs(long_g) + abs(vel_y * 0.000000001)
 
     if lat_g > 0: #weight shifting left
-        rf.update(lat_abs + .001,"lat+")
+        rf.update(lat_abs + .04,"lat+")
         rr.update(lat_abs - .1,"lat+")
     elif lat_g < 0: #weight shifting right
-        lf.update(lat_abs + .001,"lat-")
+        lf.update(lat_abs + .04,"lat-")
         lr.update(lat_abs - .1,"lat-")
 
     if long_g > 0: #weight shifting forward
