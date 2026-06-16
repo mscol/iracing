@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>iRacing 2026 Special Events Calendar</title>
+<style>
+  :root {
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f5f4ef;
+    --color-background-tertiary: #faf9f5;
+    --color-background-info: #e6f1fb;
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #6b6b6b;
+    --color-text-tertiary: #9a9a9a;
+    --color-text-info: #0c447c;
+    --color-border-tertiary: rgba(0, 0, 0, 0.12);
+    --color-border-secondary: rgba(0, 0, 0, 0.22);
+    --color-border-info: #378add;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-background-primary: #1f1e1b;
+      --color-background-secondary: #2a2926;
+      --color-background-tertiary: #1a1917;
+      --color-background-info: #0c447c;
+      --color-text-primary: #f0ede5;
+      --color-text-secondary: #a8a49b;
+      --color-text-tertiary: #706d66;
+      --color-text-info: #85b7eb;
+      --color-border-tertiary: rgba(255, 255, 255, 0.12);
+      --color-border-secondary: rgba(255, 255, 255, 0.22);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    font-family: var(--font-sans);
+    background: var(--color-background-tertiary);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+  }
+
+  .header { margin-bottom: 1.5rem; }
+  .header h1 {
+    font-size: 24px; font-weight: 500; margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  .header p {
+    font-size: 14px; color: var(--color-text-secondary);
+    margin: 0; line-height: 1.6;
+  }
+  .header a {
+    color: var(--color-text-info);
+    text-decoration: none;
+  }
+  .header a:hover { text-decoration: underline; }
+
+  .wrap { font-size: 14px; }
+
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    align-items: center; margin-bottom: 12px;
+  }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-primary);
+    font-size: 13px; cursor: pointer; user-select: none;
+    transition: background 0.1s;
+    color: var(--color-text-primary);
+  }
+  .chip:hover { background: var(--color-background-secondary); }
+  .chip.active {
+    background: var(--color-background-info);
+    color: var(--color-text-info);
+    border-color: var(--color-border-info);
+  }
+  .chip input { margin: 0; accent-color: currentColor; }
+  .chip .count { font-size: 11px; opacity: 0.7; }
+
+  .actions { display: flex; gap: 8px; margin-left: auto; }
+  .btn-sm {
+    font-size: 12px; padding: 6px 10px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-secondary);
+    background: transparent; cursor: pointer;
+    color: var(--color-text-primary);
+    font-family: inherit;
+  }
+  .btn-sm:hover { background: var(--color-background-secondary); }
+
+  .meta {
+    font-size: 12px; color: var(--color-text-secondary);
+    margin-bottom: 8px;
+  }
+
+  .section-label {
+    font-size: 12px; color: var(--color-text-secondary);
+    margin-right: 4px;
+  }
+
+  .table-wrap {
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    background: var(--color-background-primary);
+  }
+
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  col.c-series { width: 28%; }
+  col.c-track  { width: 26%; }
+  col.c-dates  { width: 15%; }
+  col.c-format { width: 11%; }
+  col.c-cars   { width: 20%; }
+
+  thead th {
+    font-size: 12px; font-weight: 500; text-align: left;
+    padding: 10px 12px;
+    background: var(--color-background-secondary);
+    color: var(--color-text-secondary);
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    cursor: pointer;
+    user-select: none;
+  }
+  thead th .arrow { font-size: 10px; opacity: 0.5; margin-left: 4px; }
+  thead th.sorted .arrow { opacity: 1; }
+
+  tbody td {
+    padding: 12px; font-size: 13px; vertical-align: top;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    overflow-wrap: break-word; word-wrap: break-word;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--color-background-secondary); }
+  tbody tr.past { opacity: 0.55; }
+
+  .series-name {
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+
+  .series-tag {
+    display: inline-block; font-size: 10px; margin-top: 4px;
+    padding: 2px 6px; border-radius: var(--border-radius-md);
+    background: var(--color-background-info);
+    color: var(--color-text-info);
+  }
+  .series-tag.past-tag {
+    background: var(--color-background-secondary);
+    color: var(--color-text-secondary);
+  }
+  .series-tag.creventic {
+    background: #eeedfe;
+    color: #3c3489;
+  }
+  @media (prefers-color-scheme: dark) {
+    .series-tag.creventic {
+      background: #3c3489;
+      color: #cecbf6;
+    }
+  }
+
+  .car-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .car-tag {
+    font-size: 11px; padding: 2px 7px;
+    border-radius: var(--border-radius-md);
+    background: var(--color-background-secondary);
+    color: var(--color-text-primary);
+  }
+
+  .format { font-size: 12px; }
+  .format.team   { color: #0f6e56; }
+  .format.solo   { color: #185fa5; }
+  .format.either { color: #854f0b; }
+  .format.tbd    { color: var(--color-text-tertiary); }
+  @media (prefers-color-scheme: dark) {
+    .format.team   { color: #5dcaa5; }
+    .format.solo   { color: #85b7eb; }
+    .format.either { color: #ef9f27; }
+  }
+
+  .empty {
+    text-align: center; padding: 2rem;
+    color: var(--color-text-secondary);
+  }
+
+  .footer {
+    margin-top: 1.25rem; font-size: 12px;
+    color: var(--color-text-tertiary); line-height: 1.6;
+  }
+  .footer a {
+    color: var(--color-text-info);
+    text-decoration: none;
+  }
+  .footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    .page { padding: 1.25rem 1rem 2rem; }
+    col.c-series { width: 34%; }
+    col.c-track  { width: 30%; }
+    col.c-dates  { width: 18%; }
+    col.c-format { width: 0; }
+    col.c-cars   { width: 18%; }
+    .hide-mobile { display: none; }
+    thead th, tbody td { padding: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>iRacing 2026 Special Events Calendar</h1>
+    <p>
+      All official iRacing special events plus the five Creventic Endurance Series rounds. Sources:
+      <a href="https://www.iracing.com/special-events/" target="_blank" rel="noopener">iracing.com/special-events</a> ·
+      <a href="https://www.iracing.com/series/creventic-endurance-series/" target="_blank" rel="noopener">Creventic series page</a>.
+    </p>
+  </div>
+
+  <div class="wrap">
+    <div class="meta" id="meta">Loading…</div>
+
+    <div class="toolbar" id="car-filters"></div>
+
+    <div class="toolbar">
+      <span class="section-label">Show:</span>
+      <label class="chip active" id="chip-upcoming">
+        <input type="checkbox" id="show-upcoming" checked /> Upcoming
+      </label>
+      <label class="chip" id="chip-past">
+        <input type="checkbox" id="show-past" /> Past
+      </label>
+      <label class="chip active" id="chip-creventic">
+        <input type="checkbox" id="show-creventic" checked /> Creventic rounds
+      </label>
+      <div class="actions">
+        <button class="btn-sm" id="select-all">All cars</button>
+        <button class="btn-sm" id="clear-all">Clear cars</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <colgroup>
+          <col class="c-series" />
+          <col class="c-track" />
+          <col class="c-dates" />
+          <col class="c-format hide-mobile" />
+          <col class="c-cars" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th data-sort="series">Series <span class="arrow">▲▼</span></th>
+            <th data-sort="track">Track <span class="arrow">▲▼</span></th>
+            <th data-sort="sortDate" class="sorted">Dates <span class="arrow">▲</span></th>
+            <th data-sort="format" class="hide-mobile">Format <span class="arrow">▲▼</span></th>
+            <th data-sort="cars">Cars <span class="arrow">▲▼</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      Data current as of April 2026. Some events have TBA details; Creventic rounds are team events using the
+      standard iRacing special event time slots (race starts at 01:00 and 13:00 GMT on Saturday).
+    </div>
+  </div>
+</div>
+
+<script>
+  const EVENTS = [
+    // Completed 2026 events
+    { series: "iRacing ROAR", track: "Daytona International Speedway (Road)", dates: "Jan 9-10, 2026", sortDate: "2026-01-09", format: "Team", cars: ["LMP3", "GT4", "TCR"], past: true },
+    { series: "Daytona 24", track: "Daytona International Speedway (Road)", dates: "Jan 16-18, 2026", sortDate: "2026-01-16", format: "Team", cars: ["GTP", "LMP2", "GT3"], past: true },
+    { series: "Daytona 500", track: "Daytona International Speedway (Oval)", dates: "Feb 11-18, 2026", sortDate: "2026-02-11", format: "Either", cars: ["NASCAR Cup"], past: true },
+    { series: "Bathurst 12H", track: "Mount Panorama Circuit", dates: "Feb 20-22, 2026", sortDate: "2026-02-20", format: "Team", cars: ["GT3"], past: true },
+    { series: "Sebring 12HR", track: "Sebring International Raceway", dates: "Mar 27-29, 2026", sortDate: "2026-03-27", format: "Team", cars: ["GTP", "LMP2", "GT3"], past: true },
+    { series: "IMSA Classic 500", track: "WeatherTech Raceway Laguna Seca", dates: "Apr 10-11, 2026", sortDate: "2026-04-10", format: "Team", cars: ["Classic GTP"], past: true },
+
+    // Upcoming iRacing Special Events
+    { series: "Nurburgring 24h", track: "Nurburgring Combined (Gesamtstrecke 24h)", dates: "May 1-3, 2026", sortDate: "2026-05-01", format: "Team", cars: ["GT3", "PCUP", "GT4", "TCR", "BMW M2 CSR"] },
+    { series: "Dale Jr Charity Event", track: "Iowa Speedway", dates: "TBD", sortDate: "2026-05-02", format: "Team", cars: ["TBD"] },
+    { series: "INDY 500", track: "Indianapolis Motor Speedway (Oval)", dates: "May 5-18, 2026", sortDate: "2026-05-05", format: "Either", cars: ["INDYCAR"] },
+    { series: "World 600", track: "Charlotte Motor Speedway (Oval)", dates: "May 20-25, 2026", sortDate: "2026-05-20", format: "Either", cars: ["NASCAR Cup"] },
+    { series: "4 Hours at Thruxton", track: "Thruxton Circuit", dates: "May 29-31, 2026", sortDate: "2026-05-29", format: "Team", cars: ["TCR", "GT4"] },
+    { series: "Creventic 12H Mugello", track: "Mugello Circuit", dates: "Jun 13-14, 2026", sortDate: "2026-06-13", format: "Team", cars: ["GT3", "PCUP", "GT4"], creventic: true },
+    { series: "Watkins Glen 6 Hour", track: "Watkins Glen International", dates: "Jun 19-21, 2026", sortDate: "2026-06-19", format: "Team", cars: ["GTP", "LMP2", "GT3"] },
+    { series: "Firecracker 400", track: "Daytona International Speedway (Oval)", dates: "Jun 30-Jul 6, 2026", sortDate: "2026-06-30", format: "Either", cars: ["1987 NASCAR Cup"] },
+    { series: "Spa 24HR", track: "Circuit de Spa-Francorchamps", dates: "Jul 10-12, 2026", sortDate: "2026-07-10", format: "Team", cars: ["GT3"] },
+    { series: "Creventic 12H Spa", track: "Circuit de Spa-Francorchamps", dates: "Jul 18-19, 2026", sortDate: "2026-07-18", format: "Team", cars: ["GT3", "PCUP", "GT4"], creventic: true },
+    { series: "Brickyard 400", track: "Indianapolis Motor Speedway (Oval)", dates: "Jul 22-27, 2026", sortDate: "2026-07-22", format: "Either", cars: ["NASCAR Cup"] },
+    { series: "6 Hours of Road America", track: "Road America", dates: "Jul 24-26, 2026", sortDate: "2026-07-24", format: "Team", cars: ["GTP", "LMP2", "GT3"] },
+    { series: "Knoxville Nationals", track: "Knoxville Raceway", dates: "Aug 4-9, 2026", sortDate: "2026-08-04", format: "Solo", cars: ["410 Sprint Car"] },
+    { series: "Portimao 1000", track: "Algarve International Circuit", dates: "Aug 14-15, 2026", sortDate: "2026-08-14", format: "Team", cars: ["HPD", "GT1", "GT2"] },
+    { series: "Creventic 12H Barcelona", track: "Circuit de Barcelona-Catalunya", dates: "Aug 15-16, 2026", sortDate: "2026-08-15", format: "Team", cars: ["GT3", "PCUP", "GT4"], creventic: true },
+    { series: "Crandon Championship", track: "Crandon International Raceway", dates: "Aug 25-30, 2026", sortDate: "2026-08-25", format: "Solo", cars: ["Pro 4 Off-Road Truck"] },
+    { series: "Southern 500", track: "Darlington Raceway", dates: "Sep 2-7, 2026", sortDate: "2026-09-02", format: "Either", cars: ["NASCAR Cup"] },
+    { series: "Suzuka 1000km", track: "Suzuka Circuit", dates: "Sep 10-15, 2026", sortDate: "2026-09-10", format: "Team", cars: ["GT3"] },
+    { series: "Creventic 12H Nurburgring GP", track: "Nurburgring GP-Strecke", dates: "Sep 12-13, 2026", sortDate: "2026-09-12", format: "Team", cars: ["GT3", "PCUP", "GT4"], creventic: true },
+    { series: "Britcar 24HR", track: "Silverstone Circuit", dates: "Sep 18-20, 2026", sortDate: "2026-09-18", format: "Team", cars: ["GT3", "GT4"] },
+    { series: "Petit Le Mans", track: "Michelin Raceway Road Atlanta", dates: "Sep 25-27, 2026", sortDate: "2026-09-25", format: "Team", cars: ["GTP", "LMP2", "GT3"] },
+    { series: "Creventic 24H Barcelona", track: "Circuit de Barcelona-Catalunya", dates: "Sep 26-27, 2026", sortDate: "2026-09-26", format: "Team", cars: ["GT3", "PCUP", "GT4"], creventic: true },
+    { series: "Bathurst 1000", track: "Mount Panorama Circuit", dates: "Oct 2-4, 2026", sortDate: "2026-10-02", format: "Team", cars: ["Supercars"] },
+    { series: "8 Hours of Indianapolis", track: "Indianapolis Motor Speedway (Road)", dates: "Oct 16-18, 2026", sortDate: "2026-10-16", format: "Team", cars: ["GT3"] },
+    { series: "iRacing FF1600 Festival", track: "Brands Hatch (Indy)", dates: "Oct 30-31, 2026", sortDate: "2026-10-30", format: "Solo", cars: ["Ray FF1600"] },
+    { series: "Homestead Championship", track: "Homestead-Miami Speedway", dates: "Nov 4-9, 2026", sortDate: "2026-11-04", format: "Either", cars: ["NASCAR Cup"] },
+    { series: "SFL Mountain Showdown", track: "Mount Panorama Circuit", dates: "Nov 13-15, 2026", sortDate: "2026-11-13", format: "Solo", cars: ["Super Formula Lights"] },
+    { series: "SCCA Runoffs", track: "TBA", dates: "Nov 17-21, 2026", sortDate: "2026-11-17", format: "Solo", cars: ["Multiple SCCA Classes"] },
+    { series: "992 Endurance Cup", track: "TBA", dates: "Nov 27-29, 2026", sortDate: "2026-11-27", format: "Team", cars: ["PCUP"] },
+    { series: "Winter Derby", track: "Five Flags Speedway", dates: "Dec 2-7, 2026", sortDate: "2026-12-02", format: "Solo", cars: ["Super Late Model"] },
+    { series: "Chili Bowl", track: "Tulsa Expo Center", dates: "Dec 15-20, 2026", sortDate: "2026-12-15", format: "Solo", cars: ["Dirt Midget"] },
+    { series: "Production Car Challenge @ ViR", track: "Virginia International Raceway (Grand)", dates: "Dec 18-19, 2026", sortDate: "2026-12-18", format: "Either", cars: ["PCC"] }
+  ];
+
+  const CAR_ORDER = ["GTP","LMP2","LMP3","GT3","GT4","TCR","PCUP","NASCAR Cup","INDYCAR","Supercars","HPD","GT1","GT2","Classic GTP","1987 NASCAR Cup","BMW M2 CSR","Super Formula Lights","Super Late Model","Ray FF1600","410 Sprint Car","Dirt Midget","Pro 4 Off-Road Truck","PCC","Multiple SCCA Classes","TBD"];
+
+  const CAR_COUNTS = {};
+  EVENTS.forEach(e => e.cars.forEach(c => { CAR_COUNTS[c] = (CAR_COUNTS[c] || 0) + 1; }));
+  const CAR_TYPES = CAR_ORDER.filter(c => CAR_COUNTS[c]);
+
+  const state = {
+    cars: new Set(CAR_TYPES),
+    showUpcoming: true,
+    showPast: false,
+    showCreventic: true,
+    sortKey: "sortDate",
+    sortDir: "asc"
+  };
+
+  const filterContainer = document.getElementById("car-filters");
+  CAR_TYPES.forEach(car => {
+    const chip = document.createElement("label");
+    chip.className = "chip active";
+    chip.innerHTML = `<input type="checkbox" checked data-car="${car}" /> ${car} <span class="count">${CAR_COUNTS[car]}</span>`;
+    filterContainer.appendChild(chip);
+    const cb = chip.querySelector("input");
+    cb.addEventListener("change", () => {
+      if (cb.checked) { state.cars.add(car); chip.classList.add("active"); }
+      else { state.cars.delete(car); chip.classList.remove("active"); }
+      render();
+    });
+  });
+
+  document.getElementById("show-upcoming").addEventListener("change", (e) => {
+    state.showUpcoming = e.target.checked;
+    document.getElementById("chip-upcoming").classList.toggle("active", e.target.checked);
+    render();
+  });
+
+  document.getElementById("show-past").addEventListener("change", (e) => {
+    state.showPast = e.target.checked;
+    document.getElementById("chip-past").classList.toggle("active", e.target.checked);
+    render();
+  });
+
+  document.getElementById("show-creventic").addEventListener("change", (e) => {
+    state.showCreventic = e.target.checked;
+    document.getElementById("chip-creventic").classList.toggle("active", e.target.checked);
+    render();
+  });
+
+  document.getElementById("select-all").addEventListener("click", () => {
+    state.cars = new Set(CAR_TYPES);
+    document.querySelectorAll('#car-filters input').forEach(cb => {
+      cb.checked = true;
+      cb.closest(".chip").classList.add("active");
+    });
+    render();
+  });
+  document.getElementById("clear-all").addEventListener("click", () => {
+    state.cars = new Set();
+    document.querySelectorAll('#car-filters input').forEach(cb => {
+      cb.checked = false;
+      cb.closest(".chip").classList.remove("active");
+    });
+    render();
+  });
+
+  document.querySelectorAll("thead th[data-sort]").forEach(th => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.sort;
+      if (state.sortKey === key) state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+      else { state.sortKey = key; state.sortDir = "asc"; }
+      document.querySelectorAll("thead th").forEach(x => {
+        x.classList.remove("sorted");
+        const arrow = x.querySelector(".arrow");
+        if (arrow && x.dataset.sort !== key) arrow.textContent = "▲▼";
+      });
+      th.classList.add("sorted");
+      th.querySelector(".arrow").textContent = state.sortDir === "asc" ? "▲" : "▼";
+      render();
+    });
+  });
+
+  function render() {
+    let rows = EVENTS.filter(ev => {
+      if (ev.creventic && !state.showCreventic) return false;
+      if (ev.past && !state.showPast) return false;
+      if (!ev.past && !state.showUpcoming) return false;
+      if (state.cars.size === 0) return false;
+      return ev.cars.some(c => state.cars.has(c));
+    });
+
+    rows.sort((a, b) => {
+      let av = a[state.sortKey], bv = b[state.sortKey];
+      if (state.sortKey === "cars") { av = a.cars.join(", "); bv = b.cars.join(", "); }
+      if (av < bv) return state.sortDir === "asc" ? -1 : 1;
+      if (av > bv) return state.sortDir === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    const tbody = document.getElementById("tbody");
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty">No events match the current filters.</td></tr>`;
+    } else {
+      tbody.innerHTML = rows.map(ev => {
+        const carTags = ev.cars.map(c => `<span class="car-tag">${c}</span>`).join("");
+        const fmtClass = ev.format.toLowerCase().replace(/[^a-z]/g, "");
+        const tag = ev.creventic
+          ? `<div class="series-tag creventic">Creventic</div>`
+          : ev.past
+            ? `<div class="series-tag past-tag">Completed</div>`
+            : "";
+        return `
+          <tr class="${ev.past ? 'past' : ''}">
+            <td><div class="series-name">${ev.series}</div>${tag}</td>
+            <td>${ev.track}</td>
+            <td>${ev.dates}</td>
+            <td class="hide-mobile"><span class="format ${fmtClass}">${ev.format}</span></td>
+            <td><div class="car-tags">${carTags}</div></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    document.getElementById("meta").textContent =
+      `Showing ${rows.length} of ${EVENTS.length} events · ${state.cars.size} of ${CAR_TYPES.length} car classes selected`;
+  }
+
+  render();
+</script>
+</body>
+</html>
